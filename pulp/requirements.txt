@@ -1,0 +1,5 @@
+ansible==2.9.0rc5
+psycopg2-binary
+django-storages[boto3]
+
+git+https://github.com/pulp/pulpcore.git@01e67b85547955534cbe1107df871670cb8937df#egg=pulpcore
