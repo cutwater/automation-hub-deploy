@@ -66,17 +66,31 @@ run_api() {
 
 run_resource_manager() {
   _prepare_env
+  # FIXME(cutwater): This is temporary fix for pulp
+  #   incorrectly handling worker process termination.
+  #   It makes impossible running multiple instances of worker.
+  # exec rq worker \
+  #     -w 'pulpcore.tasking.worker.PulpWorker' \
+  #     -n 'resource-manager@%h' \
+  #     -c 'pulpcore.rqconfig'
   exec rq worker \
       -w 'pulpcore.tasking.worker.PulpWorker' \
-      -n 'resource-manager@%h' \
+      -n 'resource-manager@automation-hub' \
       -c 'pulpcore.rqconfig'
 }
 
 run_worker() {
   _prepare_env
+  # FIXME(cutwater): This is temporary fix for pulp
+  #   incorrectly handling worker process termination.
+  #   It makes impossible running multiple instances of worker.
+  # exec rq worker \
+  #     -w 'pulpcore.tasking.worker.PulpWorker' \
+  #     -n "reserved-resource-worker@%h" \
+  #     -c 'pulpcore.rqconfig'
   exec rq worker \
       -w 'pulpcore.tasking.worker.PulpWorker' \
-      -n "reserved-resource-worker@%h" \
+      -n "reserved-resource-worker@automation-hub" \
       -c 'pulpcore.rqconfig'
 }
 
