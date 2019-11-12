@@ -16,11 +16,7 @@ RUN yum -y install epel-release \
         python36-devel \
     && yum -y clean all
 
-RUN mkdir -p /var/run/pulp \
-    /var/lib/pulp/tmp
-
 COPY requirements.txt /tmp/pulp/
-
 RUN python3.6 -m venv "${PULP_VENV}" \
     && source "${PULP_VENV}/bin/activate" \
     && pip --no-cache-dir install -U \
@@ -31,16 +27,18 @@ RUN python3.6 -m venv "${PULP_VENV}" \
     && pip install -r requirements.txt
 
 COPY ansible.cfg /etc/ansible/ansible.cfg
-COPY entrypoint.sh /entrypoint
 COPY settings.py /etc/pulp/settings.py
+COPY entrypoint.sh /entrypoint
 
-RUN useradd --no-create-home --user-group django \
-    && chmod +x /entrypoint \
+RUN useradd --uid 1000 \
+        --no-create-home \
+        --user-group django \
+    && mkdir -p -m 0775 /var/run/pulp \
+                     /var/lib/pulp/tmp \
     && chown django:root /entrypoint \
                          /var/run/pulp \
                          /var/lib/pulp/tmp \
-    && chmod g+w /var/run/pulp \
-                 /var/lib/pulp/tmp
+    && chmod +x /entrypoint
 
 VOLUME /data/
 WORKDIR /code/
