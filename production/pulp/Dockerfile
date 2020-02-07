@@ -6,25 +6,26 @@ ENV PYTHONUNBUFFERED=1 \
     PULP_VENV=/venv \
     PULP_SETTINGS=/etc/pulp/settings.py \
     DJANGO_SETTINGS_MODULE=pulpcore.app.settings \
-    PATH="/venv/bin:$PATH"
+    ENABLED_COLLECTIONS="rh-python36 rh-postgresql12"
 
-RUN yum -y install epel-release \
+RUN yum -y install centos-release-scl-rh \
     && yum -y install \
         gcc \
         git \
-        python36 \
-        python36-devel \
+        rh-python36 \
+        rh-postgresql12-postgresql-libs \
+        rh-postgresql12-postgresql-devel \
     && yum -y clean all
 
-COPY requirements.txt /tmp/pulp/
-RUN python3.6 -m venv "${PULP_VENV}" \
+COPY constraints.txt requirements.txt /tmp/pulp/
+RUN source scl_source enable ${ENABLED_COLLECTIONS} \
+    && python3.6 -m venv "${PULP_VENV}" \
     && source "${PULP_VENV}/bin/activate" \
-    && pip --no-cache-dir install -U \
-        'pip<19.0' \
-        wheel \
-        uwsgi \
-    && cd /tmp/pulp \
-    && pip install -r requirements.txt
+    && pip install --no-cache-dir -U \
+        'pip>=20.0,<21.0' \
+    && pip install --no-cache-dir \
+        -c /tmp/pulp/constraints.txt \
+        -r /tmp/pulp/requirements.txt
 
 COPY ansible.cfg /etc/ansible/ansible.cfg
 COPY settings.py /etc/pulp/settings.py
@@ -40,8 +41,7 @@ RUN useradd --uid 1000 \
                          /var/lib/pulp/tmp \
     && chmod +x /entrypoint
 
+USER django
 VOLUME /data/
 WORKDIR /code/
-USER django
-
 ENTRYPOINT [ "/entrypoint" ]

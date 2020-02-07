@@ -1,9 +1,20 @@
 #!/bin/bash
 
+# NOTE: This line should be before setting bash modes, because
+# `scl_source` is not compatible with `set -o nounset`.
+ENABLED_COLLECTIONS="${ENABLED_COLLECTIONS:-}"
+if [[ ! -z "${ENABLED_COLLECTIONS}" ]]; then
+  source scl_source enable ${ENABLED_COLLECTIONS}
+fi
+export PATH="${PULP_VENV}/bin:$PATH"
+
+
 set -o nounset
 set -o errexit
 
+
 PULP_CODE="${PULP_CODE}"
+
 
 _wait_for_tcp_port() {
   local -r host="$1"
@@ -29,7 +40,7 @@ _wait_for_tcp_port() {
 
 _prepare_env() {
   _wait_for_tcp_port "${PULP_DB_HOST:-postgres}" "${PULP_DB_PORT:-5432}"
-  _wait_for_tcp_port redis 6379
+  _wait_for_tcp_port "${PULP_REDIS_HOST:-redis}" "${PULP_REDIS_PORT:-6379}"
   django-admin migrate
 }
 
@@ -74,8 +85,8 @@ run_resource_manager() {
   #     -c 'pulpcore.rqconfig'
   exec rq worker \
       -w 'pulpcore.tasking.worker.PulpWorker' \
-      -n 'resource-manager@automation-hub' \
-      -c 'pulpcore.rqconfig'
+      -c 'pulpcore.rqconfig' \
+      -n 'resource-manager'
 }
 
 run_worker() {
@@ -89,8 +100,8 @@ run_worker() {
   #     -c 'pulpcore.rqconfig'
   exec rq worker \
       -w 'pulpcore.tasking.worker.PulpWorker' \
-      -n "reserved-resource-worker@automation-hub" \
-      -c 'pulpcore.rqconfig'
+      -c 'pulpcore.rqconfig' \
+      -n "worker@automation-hub"
 }
 
 run_content_app() {
