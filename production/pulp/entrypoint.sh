@@ -59,8 +59,7 @@ run_api() {
       --master \
       --http-socket :8000 \
       --module 'pulpcore.app.wsgi:application' \
-      --processes 4 \
-      --threads 2 \
+      --threads 4 \
       --buffer-size 32768
 }
 
