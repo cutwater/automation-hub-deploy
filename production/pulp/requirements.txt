@@ -1,8 +1,0 @@
-ansible==2.9.0rc5
-django-storages[boto3]==1.9.1
-
-uwsgi==2.0.18
-
-pulpcore==3.2.0
-pulp-ansible==0.2.0b11
-
