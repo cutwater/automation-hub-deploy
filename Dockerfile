@@ -5,7 +5,8 @@ RUN mkdir -p -m 0770 /var/cache/nginx \
     && chown 1001:0 /var/cache/nginx
 USER 1001
 
-COPY nginx/nginx.conf "${NGINX_CONF_PATH}"
-COPY nginx/nginx-cfg/default.conf "${NGINX_CONFIGURATION_PATH}"
+COPY --chown=1001:0 nginx/nginx.conf "${NGINX_CONF_PATH}"
+COPY --chown=1001:0 nginx/nginx-cfg/default.conf "${NGINX_CONFIGURATION_PATH}"
+COPY --chown=1001:0 run.sh /run.sh
 
-CMD nginx -g "daemon off;"
+CMD [ "/run.sh" ]
